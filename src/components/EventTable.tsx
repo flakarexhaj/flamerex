@@ -7,9 +7,13 @@ type SortKey = "time" | "severity";
 const PAGE_SIZE = 10;
 const NEXT: Record<Status, Status> = { open: "investigating", investigating: "resolved", resolved: "open" };
 
-interface Props { events: SecurityEvent[]; onStatusChange: (id: number, status: Status) => void; }
+interface Props {
+  events: SecurityEvent[];
+  onStatusChange: (id: number, status: Status) => void;
+  onSelect: (event: SecurityEvent) => void;
+}
 
-export default function EventTable({ events, onStatusChange }: Props) {
+export default function EventTable({ events, onStatusChange, onSelect }: Props) { 
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "time", dir: -1 });
@@ -63,15 +67,19 @@ export default function EventTable({ events, onStatusChange }: Props) {
           </thead>
           <tbody>
             {visible.map((e) => (
-              <tr key={e.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800/60">
-                <td className="whitespace-nowrap px-4 py-2.5 text-slate-500 dark:text-slate-400">{new Date(e.time).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+<tr
+  key={e.id}
+  onClick={() => onSelect(e)}
+  onKeyDown={(ev) => ev.key === "Enter" && onSelect(e)}
+  tabIndex={0}
+  className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 focus-visible:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/50 dark:focus-visible:bg-slate-800/50"
+>                <td className="whitespace-nowrap px-4 py-2.5 text-slate-500 dark:text-slate-400">{new Date(e.time).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
                 <td className="px-4 py-2.5 font-medium">{e.type}</td>
                 <td className="px-4 py-2.5"><SeverityBadge value={e.severity} /></td>
                 <td className="px-4 py-2.5"><span className="font-mono text-xs">{e.ip}</span> <span className="text-slate-500">{e.country}</span></td>
                 <td className="px-4 py-2.5 font-mono text-xs">{e.target}</td>
                 <td className="px-4 py-2.5">
-                  <button onClick={() => onStatusChange(e.id, NEXT[e.status])} title={`Change to ${NEXT[e.status]}`} className="rounded focus-visible:ring-2 focus-visible:ring-teal-600">
-                    <StatusText value={e.status} />
+<button onClick={(ev) => { ev.stopPropagation(); onStatusChange(e.id, NEXT[e.status]); }} title={`Change to ${NEXT[e.status]}`} className="rounded focus-visible:ring-2 focus-visible:ring-teal-600">                    <StatusText value={e.status} />
                   </button>
                 </td>
               </tr>

@@ -4,10 +4,13 @@ import { makeEvent, seedEvents } from "./data";
 import StatCard from "./components/StatCard";
 import Charts from "./components/Charts";
 import EventTable from "./components/EventTable";
+import EventDrawer from "./components/EventDrawer";
 
 export default function App() {
   const [events, setEvents] = useState<SecurityEvent[]>(() => seedEvents());
   const [live, setLive] = useState(true);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+const selected = events.find((e) => e.id === selectedId) ?? null;
   const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
@@ -53,7 +56,8 @@ export default function App() {
       </div>
 
       <Charts events={events} />
-      <EventTable events={events} onStatusChange={updateStatus} />
+      <EventTable events={events} onStatusChange={updateStatus} onSelect={(e) => setSelectedId(e.id)} />
+<EventDrawer event={selected} onClose={() => setSelectedId(null)} onStatusChange={updateStatus} />
     </div>
   );
 }
