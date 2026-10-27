@@ -1,30 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
-import type { SecurityEvent, Status } from "./types";
-import { makeEvent, seedEvents } from "./data";
+import { useEffect } from "react";
+import { useStore } from "./store";
 import StatCard from "./components/StatCard";
 import Charts from "./components/Charts";
 import EventTable from "./components/EventTable";
 import EventDrawer from "./components/EventDrawer";
 
 export default function App() {
-  const [events, setEvents] = useState<SecurityEvent[]>(() => seedEvents());
-  const [live, setLive] = useState(true);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-const selected = events.find((e) => e.id === selectedId) ?? null;
-  const [dark, setDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const events = useStore((s) => s.events);
+  const live = useStore((s) => s.live);
+  const dark = useStore((s) => s.dark);
+  const addEvent = useStore((s) => s.addEvent);
+  const toggleLive = useStore((s) => s.toggleLive);
+  const toggleDark = useStore((s) => s.toggleDark);
 
-  useEffect(() => { document.documentElement.classList.toggle("dark", dark); }, [dark]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   // Simulated live feed: a new event arrives every 4 seconds
   useEffect(() => {
     if (!live) return;
-    const id = setInterval(() => setEvents((prev) => [makeEvent(Date.now()), ...prev]), 4000);
+    const id = setInterval(addEvent, 4000);
     return () => clearInterval(id);
-  }, [live]);
-
-  const updateStatus = useCallback((id: number, status: Status) => {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, status } : e)));
-  }, []);
+  }, [live, addEvent]);
 
   const dayAgo = Date.now() - 86400_000;
   const last24 = events.filter((e) => e.time > dayAgo).length;
@@ -40,11 +38,13 @@ const selected = events.find((e) => e.id === selectedId) ?? null;
           <p className="text-sm text-slate-500 dark:text-slate-400">Security operations overview (demo data)</p>
         </div>
         <div className="flex gap-2 text-sm">
-          <button onClick={() => setLive(!live)} aria-pressed={live} className="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 dark:border-slate-700">
+          <button onClick={toggleLive} aria-pressed={live} className="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 dark:border-slate-700">
             <span className={`h-2 w-2 rounded-full ${live ? "animate-pulse bg-emerald-500" : "bg-slate-400"}`} />
             {live ? "Live" : "Paused"}
           </button>
-          <button onClick={() => setDark(!dark)} className="rounded-md border border-slate-300 px-3 py-1.5 dark:border-slate-700">{dark ? "Light mode" : "Dark mode"}</button>
+          <button onClick={toggleDark} className="rounded-md border border-slate-300 px-3 py-1.5 dark:border-slate-700">
+            {dark ? "Light mode" : "Dark mode"}
+          </button>
         </div>
       </header>
 
@@ -56,8 +56,8 @@ const selected = events.find((e) => e.id === selectedId) ?? null;
       </div>
 
       <Charts events={events} />
-      <EventTable events={events} onStatusChange={updateStatus} onSelect={(e) => setSelectedId(e.id)} />
-<EventDrawer event={selected} onClose={() => setSelectedId(null)} onStatusChange={updateStatus} />
+      <EventTable />
+      <EventDrawer />
     </div>
   );
 }

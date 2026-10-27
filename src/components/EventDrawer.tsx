@@ -1,22 +1,21 @@
 import { useEffect } from "react";
-import type { SecurityEvent, Status } from "../types";
+import type { Status } from "../types";
+import { useStore } from "../store";
 import { SeverityBadge, StatusText } from "./Badge";
-
-interface Props {
-  event: SecurityEvent | null;
-  onClose: () => void;
-  onStatusChange: (id: number, status: Status) => void;
-}
 
 const STATUSES: Status[] = ["open", "investigating", "resolved"];
 
-export default function EventDrawer({ event, onClose, onStatusChange }: Props) {
-  // Close with the Escape key
+export default function EventDrawer() {
+  const event = useStore((s) => s.events.find((e) => e.id === s.selectedId) ?? null);
+  const select = useStore((s) => s.select);
+  const onStatusChange = useStore((s) => s.updateStatus);
+  const onClose = () => select(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && select(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [select]);
 
   if (!event) return null;
 
