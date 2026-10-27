@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { SECTION_INFO, type Section } from "../sections";
 
-const BAR = 64; // height of the bottom navigation bar, in px
+const BAR = 64; // mobile: height of the link bar under the poster, in px
+const MAX_ZOOM = 1.05; // desktop: how much the poster may be enlarged (and slightly cropped) to fill the screen
 
 interface Hotspot { label: string; to: Section; x: number; y: number; w: number; h: number; }
 interface Poster { src: string; w: number; h: number; spots: Hotspot[]; }
@@ -63,49 +64,88 @@ const FEATHER = {
   WebkitMaskComposite: "source-in",
 } as const;
 
-export default function Landing({ onNavigate }: { onNavigate: (s: Section) => void }) {
-  const p = useLandscape() ? DESKTOP : MOBILE;
+// The image plus its invisible clickable areas. Positions are percentages, so they follow the image at any size.
+function PosterLayer({ p, onNavigate }: { p: Poster; onNavigate: (s: Section) => void }) {
+  return (
+    <>
+      <img src={p.src} alt={ALT} draggable={false} className="absolute inset-0 h-full w-full select-none" style={FEATHER} />
+      {p.spots.map((s) => (
+        <button
+          key={`${s.label}-${s.x}-${s.y}`}
+          onClick={() => onNavigate(s.to)}
+          aria-label={s.label}
+          title={s.label}
+          className="absolute cursor-pointer rounded-sm transition-colors hover:bg-violet-500/15 focus-visible:bg-violet-500/20"
+          style={{
+            left: `${((s.x + s.w / 2) / p.w) * 100}%`,
+            top: `${((s.y + s.h / 2) / p.h) * 100}%`,
+            width: `${(s.w / p.w) * 100}%`,
+            height: `${(s.h / p.h) * 100}%`,
+            minWidth: 32,
+            minHeight: 40,
+            transform: "translate(-50%, -50%)",
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
+function IndexLinks({ onNavigate }: { onNavigate: (s: Section) => void }) {
+  return (
+    <>
+      {INDEX.map((id) => (
+        <button key={id} onClick={() => onNavigate(id)} className="pointer-events-auto uppercase transition-colors hover:text-white">
+          <span className="mr-2 text-violet-400">{SECTION_INFO[id].num}</span>
+          {SECTION_INFO[id].label}
+        </button>
+      ))}
+    </>
+  );
+}
+
+export default function Landing({ onNavigate }: { onNavigate: (s: Section) => void }) {
+  const landscape = useLandscape();
+
+  if (landscape) {
+    // Desktop: the poster fills the whole screen. It is scaled to cover the window, but never by more
+    // than MAX_ZOOM, so on very wide or very tall windows a little black margin is kept instead of cutting the menu.
+    const r = DESKTOP.w / DESKTOP.h;
+    const fit = `min(100%, calc(100svh * ${r}))`;
+    const width = `min(max(100%, calc(100svh * ${r})), calc(${MAX_ZOOM} * ${fit}))`;
+
+    return (
+      <div className="relative h-svh w-full overflow-hidden" style={{ backgroundColor: "#07040d" }}>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width, aspectRatio: `${DESKTOP.w} / ${DESKTOP.h}` }}>
+          <PosterLayer p={DESKTOP} onNavigate={onNavigate} />
+        </div>
+        <nav
+          aria-label="Sections"
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 bg-gradient-to-t from-[#07040d]/80 to-transparent px-4 pb-5 pt-10 font-mono text-[10px] tracking-[0.18em] text-slate-400"
+        >
+          <IndexLinks onNavigate={onNavigate} />
+        </nav>
+      </div>
+    );
+  }
+
+  // Mobile: the poster is centered, with the section links under it
   return (
     <div className="flex min-h-svh flex-col" style={{ backgroundColor: "#07040d" }}>
       <div className="flex flex-1 items-center justify-center">
         <div
           className="relative"
-          style={{ width: `min(100%, calc((100svh - ${BAR}px) * ${p.w / p.h}))`, aspectRatio: `${p.w} / ${p.h}` }}
+          style={{ width: `min(100%, calc((100svh - ${BAR}px) * ${MOBILE.w / MOBILE.h}))`, aspectRatio: `${MOBILE.w} / ${MOBILE.h}` }}
         >
-          <img src={p.src} alt={ALT} draggable={false} className="absolute inset-0 h-full w-full select-none" style={FEATHER} />
-          {p.spots.map((s) => (
-            <button
-              key={`${s.label}-${s.x}-${s.y}`}
-              onClick={() => onNavigate(s.to)}
-              aria-label={s.label}
-              title={s.label}
-              className="absolute cursor-pointer rounded-sm transition-colors hover:bg-violet-500/15 focus-visible:bg-violet-500/20"
-              style={{
-                left: `${((s.x + s.w / 2) / p.w) * 100}%`,
-                top: `${((s.y + s.h / 2) / p.h) * 100}%`,
-                width: `${(s.w / p.w) * 100}%`,
-                height: `${(s.h / p.h) * 100}%`,
-                minWidth: 32,
-                minHeight: 40,
-                transform: "translate(-50%, -50%)",
-              }}
-            />
-          ))}
+          <PosterLayer p={MOBILE} onNavigate={onNavigate} />
         </div>
       </div>
-
       <nav
         aria-label="Sections"
         className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-white/10 px-4 py-4 font-mono text-[11px] tracking-[0.2em] text-slate-400"
         style={{ minHeight: BAR }}
       >
-        {INDEX.map((id) => (
-          <button key={id} onClick={() => onNavigate(id)} className="uppercase transition-colors hover:text-white">
-            <span className="mr-2 text-violet-400">{SECTION_INFO[id].num}</span>
-            {SECTION_INFO[id].label}
-          </button>
-        ))}
+        <IndexLinks onNavigate={onNavigate} />
       </nav>
     </div>
   );
