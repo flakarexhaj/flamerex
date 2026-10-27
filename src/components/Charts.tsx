@@ -3,14 +3,17 @@ import { useMemo } from "react";
 import type { SecurityEvent } from "../types";
 import { ATTACK_TYPES } from "../data";
 
+const GOLD = "#d4af57";
+const TICK = { fontSize: 11, fill: "#9a8db8" };
+
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+  <section className="rounded-lg border border-violet-500/20 bg-slate-900/70 p-4">
     <h2 className="mb-3 text-sm font-semibold">{title}</h2>
     <div className="h-56">{children}</div>
   </section>
 );
 
-const tooltipStyle = { background: "#0f172a", border: "none", borderRadius: 6, color: "#f1f5f9", fontSize: 12 };
+const tooltipStyle = { background: "#170f29", border: `1px solid ${GOLD}66`, borderRadius: 6, color: "#f3eefc", fontSize: 12 };
 
 export default function Charts({ events }: { events: SecurityEvent[] }) {
   const daily = useMemo(() => {
@@ -38,15 +41,15 @@ export default function Charts({ events }: { events: SecurityEvent[] }) {
           <ResponsiveContainer>
             <AreaChart data={daily} margin={{ left: -20, right: 8 }}>
               <defs>
-                <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0d9488" stopOpacity={0.4} /><stop offset="100%" stopColor="#0d9488" stopOpacity={0} />
+                <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={GOLD} stopOpacity={0.45} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#64748b33" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval={1} />
-              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#8b5cf626" vertical={false} />
+              <XAxis dataKey="day" tick={TICK} tickLine={false} axisLine={false} interval={1} />
+              <YAxis tick={TICK} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="count" name="Events" stroke="#0d9488" strokeWidth={2} fill="url(#g)" />
+              <Area type="monotone" dataKey="count" name="Events" stroke={GOLD} strokeWidth={2} fill="url(#goldFill)" />
             </AreaChart>
           </ResponsiveContainer>
         </Panel>
@@ -56,9 +59,9 @@ export default function Charts({ events }: { events: SecurityEvent[] }) {
           <ResponsiveContainer>
             <BarChart data={byType} layout="vertical" margin={{ left: 10, right: 8 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="type" width={90} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#64748b22" }} />
-              <Bar dataKey="count" name="Events" fill="#0d9488" radius={[0, 4, 4, 0]} />
+              <YAxis type="category" dataKey="type" width={90} tick={TICK} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "#8b5cf622" }} />
+              <Bar dataKey="count" name="Events" fill={GOLD} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Panel>
