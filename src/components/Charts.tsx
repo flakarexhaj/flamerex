@@ -7,7 +7,7 @@ const GOLD = "#d4af57";
 const TICK = { fontSize: 11, fill: "#9a8db8" };
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="rounded-lg border border-violet-500/20 bg-slate-900/70 p-4">
+  <section className="border-t border-violet-500/15 pt-4">
     <h2 className="mb-3 text-sm font-semibold">{title}</h2>
     <div className="h-56">{children}</div>
   </section>
@@ -35,7 +35,7 @@ export default function Charts({ events }: { events: SecurityEvent[] }) {
   );
 
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
+    <div className="grid gap-x-10 gap-y-8 lg:grid-cols-5">
       <div className="lg:col-span-3">
         <Panel title="Events over the last 14 days">
           <ResponsiveContainer>

@@ -6,7 +6,7 @@ import { useStore } from "../store";
 
 const GOLD = 0xd4af57;
 const TILT = 0.25; // default tilt of the globe, in radians
-const SECONDS_PER_TURN = 30; // sa sekonda i duhen globit për një rrotullim të plotë
+const SECONDS_PER_TURN = 30; // seconds for one full turn
 
 // Approximate [lat, lon] of each country. Add a line here if a new country shows up in your data.
 const COUNTRY_COORDS: Record<string, [number, number]> = {
@@ -220,8 +220,8 @@ export default function ThreatMap() {
     let animationId = 0;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-    const delta = Math.min(clock.getDelta(), 0.1);
-const t = clock.elapsedTime;
+      const delta = Math.min(clock.getDelta(), 0.1);
+      const t = clock.elapsedTime;
       const target = targetRef.current;
 
       if (target) {
@@ -232,7 +232,7 @@ const t = clock.elapsedTime;
         globe.rotation.x += dx * 0.08;
         if (Math.abs(dy) < 0.002 && Math.abs(dx) < 0.002) targetRef.current = null;
       } else if (!dragging && !hovering && !pausedRef.current && !reduceMotion) {
-       globe.rotation.y += ((Math.PI * 2) / SECONDS_PER_TURN) * delta;
+        globe.rotation.y += ((Math.PI * 2) / SECONDS_PER_TURN) * delta;
       }
 
       markers.forEach((m) => {
@@ -312,8 +312,8 @@ const t = clock.elapsedTime;
   }, [selectedCountry]);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-violet-500/20 bg-slate-900/70">
-      <div className="flex flex-wrap items-start justify-between gap-3 p-5">
+    <section>
+      <div className="flex flex-wrap items-start justify-between gap-3 pb-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.25em] text-amber-300">FLAMEREX / GLOBAL INTELLIGENCE</p>
           <h3 className="mt-2 text-lg font-semibold text-amber-50">Global Threat Map</h3>
@@ -341,7 +341,7 @@ const t = clock.elapsedTime;
         />
       </div>
 
-      <div className="flex flex-wrap gap-4 border-t border-violet-500/15 px-5 py-3 text-xs text-amber-100/70">
+      <div className="flex flex-wrap gap-4 border-t border-violet-500/15 py-3 text-xs text-amber-100/70">
         <span><span className="text-red-400">●</span> Critical</span>
         <span><span className="text-orange-300">●</span> High</span>
         <span><span className="text-amber-200">●</span> Medium</span>
@@ -349,16 +349,16 @@ const t = clock.elapsedTime;
         <span className="text-amber-100/40">Marker color shows the highest severity in that country. Bigger means more events.</span>
       </div>
 
-      <div className="border-t border-violet-500/15 p-5">
+      <div className="border-t border-violet-500/15 py-5">
         <h4 className="mb-3 text-xs font-semibold tracking-widest text-amber-400">COUNTRIES ({stats.length})</h4>
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <ul className="grid grid-cols-2 gap-x-6 sm:grid-cols-3 lg:grid-cols-5">
           {stats.map((s) => (
             <li key={s.country}>
               <button
                 onClick={() => choose(s)}
                 aria-pressed={s.country === selectedCountry}
-                className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-colors ${
-                  s.country === selectedCountry ? "border-amber-400/60 bg-amber-400/10 text-amber-50" : "border-violet-500/20 text-amber-100/80 hover:border-violet-400/50"
+                className={`flex w-full items-center gap-2 py-2 text-left text-xs transition-colors ${
+                  s.country === selectedCountry ? "text-amber-200 underline decoration-amber-400/60 underline-offset-4" : "text-amber-100/80 hover:text-amber-100"
                 }`}
               >
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: css(SEVERITY_HEX[s.top]) }} />
@@ -376,13 +376,13 @@ const t = clock.elapsedTime;
       </div>
 
       {selected && (
-        <div className="border-t border-violet-500/20 bg-slate-950/50 p-5 text-sm text-amber-50">
+        <div className="border-t border-violet-500/15 py-5 text-sm text-amber-50">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs tracking-widest text-amber-400">SELECTED COUNTRY</p>
               <h4 className="mt-2 text-base font-semibold">{selected.country}</h4>
             </div>
-            <button onClick={() => setSelectedCountry(null)} className="rounded-lg border border-violet-500/30 px-3 py-1 text-xs hover:bg-violet-500/10">
+            <button onClick={() => setSelectedCountry(null)} className="text-xs text-amber-200 underline-offset-4 hover:underline">
               Close
             </button>
           </div>

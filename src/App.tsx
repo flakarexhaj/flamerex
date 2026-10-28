@@ -11,10 +11,6 @@ import { SeverityBadge, StatusText } from "./components/Badge";
 import { SECTION_INFO, readHash, type Section } from "./sections";
 import { useStore } from "./store";
 
-const panel = "rounded-2xl border border-violet-500/20 bg-slate-900/70";
-const button =
-  "rounded-xl border border-violet-500/25 bg-slate-900 px-4 py-2.5 text-sm font-medium transition-colors hover:border-violet-400/60 hover:bg-violet-500/10";
-
 export default function App() {
   const [section, setSection] = useState<Section>(readHash);
 
@@ -59,42 +55,42 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <main className="mx-auto max-w-[1400px] space-y-6 p-4 sm:p-6 lg:p-8">
-        <header className={`p-5 sm:p-6 ${panel}`}>
+      <main className="mx-auto max-w-[1400px] space-y-10 p-4 sm:p-6 lg:p-8">
+        <header>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <button onClick={() => go("home")} className={button}>
+            <button onClick={() => go("home")} className="-ml-1 px-1 py-2 text-sm text-violet-300 transition-colors hover:text-white">
               ← Back to home
             </button>
-            <button onClick={toggleLive} aria-pressed={live} className={`flex items-center gap-2 ${button}`}>
+            <button onClick={toggleLive} aria-pressed={live} className="flex items-center gap-2 px-1 py-2 text-sm text-slate-300 transition-colors hover:text-white">
               <span className={`h-2 w-2 rounded-full ${live ? "animate-pulse bg-emerald-500" : "bg-slate-500"}`} />
               {live ? "Live monitoring" : "Paused"}
             </button>
           </div>
-          <h1 className="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">{info.title}</h1>
-          <p className="mt-2 text-sm text-slate-400">{info.description}</p>
+          <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl">{info.title}</h1>
+          <p className="mt-2 max-w-prose text-sm text-slate-400">{info.description}</p>
         </header>
 
-            {section === "events" && <EventTable />}
+        {section === "events" && <EventTable />}
 
             {section === "intelligence" && (
-              <div className="space-y-5">
+              <div className="space-y-10">
                 <ThreatMap />
-                <div className={`overflow-hidden ${panel}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-violet-500/15 p-5">
+                <section>
+                  <div className="flex flex-wrap items-end justify-between gap-3 pb-4">
                     <div>
                       <h2 className="font-semibold">Live Threat Feed</h2>
                       <p className="mt-1 text-xs text-slate-400">Most recent events recorded by this dashboard.</p>
                     </div>
                     <span className="text-xs text-slate-400">{events.length} events</span>
                   </div>
-                  <ul className="divide-y divide-violet-500/10">
+                  <ul className="divide-y divide-violet-500/10 border-y border-violet-500/15">
                     {recent.map((e) => (
-                      <li key={e.id} className="grid grid-cols-1 gap-2 p-4 transition-colors hover:bg-violet-500/5 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
+                      <li key={e.id} className="grid grid-cols-1 gap-2 py-4 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold">{e.type}</p>
                           <p className="mt-1 text-xs text-slate-400">{e.ip} · {e.country}</p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-4">
                           <SeverityBadge value={e.severity} />
                           <StatusText value={e.status} />
                         </div>
@@ -104,13 +100,13 @@ export default function App() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </section>
               </div>
             )}
 
             {section === "analytics" && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
                   <StatCard label="Events, last 24h" value={last24} hint="All severities" />
                   <StatCard label="Unresolved critical" value={critical} hint="Needs immediate attention" tone="danger" />
                   <StatCard label="Open events" value={open} hint="Not yet triaged" />

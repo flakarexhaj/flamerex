@@ -24,16 +24,12 @@ const columns = [
     header: "Time",
     sortDescFirst: true,
     cell: (c) => (
-      <span className="whitespace-nowrap text-slate-500 dark:text-slate-400">
+      <span className="whitespace-nowrap text-slate-400">
         {new Date(c.getValue()).toLocaleString("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
       </span>
     ),
   }),
-  col.accessor("type", {
-    header: "Attack",
-    enableSorting: false,
-    cell: (c) => <span className="font-medium">{c.getValue()}</span>,
-  }),
+  col.accessor("type", { header: "Attack", enableSorting: false, cell: (c) => <span className="font-medium">{c.getValue()}</span> }),
   col.accessor("severity", {
     header: "Severity",
     filterFn: "equalsString",
@@ -52,11 +48,7 @@ const columns = [
       </>
     ),
   }),
-  col.accessor("target", {
-    header: "Target",
-    enableSorting: false,
-    cell: (c) => <span className="font-mono text-xs">{c.getValue()}</span>,
-  }),
+  col.accessor("target", { header: "Target", enableSorting: false, cell: (c) => <span className="font-mono text-xs">{c.getValue()}</span> }),
   col.accessor("status", {
     header: "Status",
     enableSorting: false,
@@ -75,13 +67,15 @@ const columns = [
   }),
 ];
 
+const line = "border-violet-500/30 bg-transparent text-sm transition-colors focus:border-violet-400";
+
 export default function EventTable() {
   const events = useStore((s) => s.events);
   const select = useStore((s) => s.select);
   const [sorting, setSorting] = useState<SortingState>([{ id: "time", desc: true }]);
   const [search, setSearch] = useState("");
 
-  const table = useReactTable<SecurityEvent>({
+  const table = useReactTable({
     data: events,
     columns,
     state: { sorting, globalFilter: search },
@@ -100,15 +94,15 @@ export default function EventTable() {
   const pageIndex = table.getState().pagination.pageIndex;
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4 dark:border-slate-800">
+    <section>
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-3 pb-4">
         <h2 className="mr-auto text-sm font-semibold">
           Event log <span className="font-normal text-slate-500">({table.getFilteredRowModel().rows.length})</span>
         </h2>
         <input
           aria-label="Search events" placeholder="Search IP, type, country…" value={search}
           onChange={(e) => { setSearch(e.target.value); table.setPageIndex(0); }}
-          className="w-56 rounded-md border border-slate-300 bg-transparent px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-teal-600 dark:border-slate-700"
+          className={`w-56 border-0 border-b px-0 py-1.5 placeholder:text-slate-500 ${line}`}
         />
         <select
           aria-label="Filter by severity" value={severity}
@@ -117,25 +111,25 @@ export default function EventTable() {
             table.getColumn("severity")?.setFilterValue(v === "all" ? undefined : v);
             table.setPageIndex(0);
           }}
-          className="rounded-md border border-slate-300 bg-transparent px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+          className={`border-0 border-b py-1.5 pr-6 ${line}`}
         >
           <option value="all">All severities</option>
           {SEVERITIES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto border-t border-violet-500/15">
         <table className="w-full text-left text-sm">
-          <thead className="text-xs text-slate-500 dark:text-slate-400">
+          <thead className="text-xs text-slate-400">
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-slate-200 dark:border-slate-800">
+              <tr key={hg.id} className="border-b border-violet-500/15">
                 {hg.headers.map((h) => {
                   const dir = h.column.getIsSorted();
                   const label = flexRender(h.column.columnDef.header, h.getContext());
                   return (
-                    <th key={h.id} className="px-4 py-2 font-medium">
+                    <th key={h.id} className="py-2.5 pr-4 font-medium">
                       {h.column.getCanSort() ? (
-                        <button onClick={h.column.getToggleSortingHandler()}>
+                        <button onClick={h.column.getToggleSortingHandler()} className="hover:text-white">
                           {label}{dir === "asc" ? " ↑" : dir === "desc" ? " ↓" : ""}
                         </button>
                       ) : label}
@@ -152,27 +146,25 @@ export default function EventTable() {
                 onClick={() => select(row.original.id)}
                 onKeyDown={(ev) => ev.key === "Enter" && select(row.original.id)}
                 tabIndex={0}
-                className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50 focus-visible:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/50 dark:focus-visible:bg-slate-800/50"
+                className="cursor-pointer border-b border-violet-500/10 transition-colors last:border-0 hover:bg-violet-500/5 focus-visible:bg-violet-500/5"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-2.5">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  <td key={cell.id} className="py-3 pr-4">{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                 ))}
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-500">No events match. Clear the search or choose another severity.</td></tr>
+              <tr><td colSpan={6} className="py-10 text-center text-slate-500">No events match. Clear the search or choose another severity.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center justify-between p-3 text-sm">
+      <div className="flex items-center justify-between border-t border-violet-500/15 py-3 text-sm">
         <span className="text-slate-500">Page {pageIndex + 1} of {Math.max(1, table.getPageCount())}</span>
-        <div className="flex gap-2">
-          <button disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()} className="rounded border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700">Previous</button>
-          <button disabled={!table.getCanNextPage()} onClick={() => table.nextPage()} className="rounded border border-slate-300 px-3 py-1 disabled:opacity-40 dark:border-slate-700">Next</button>
+        <div className="flex gap-6">
+          <button disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()} className="transition-colors hover:text-white disabled:opacity-40 disabled:hover:text-inherit">← Previous</button>
+          <button disabled={!table.getCanNextPage()} onClick={() => table.nextPage()} className="transition-colors hover:text-white disabled:opacity-40 disabled:hover:text-inherit">Next →</button>
         </div>
       </div>
     </section>

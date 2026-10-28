@@ -8,15 +8,19 @@ const LINKS = [
 
 export default function ContactSection() {
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <ul className="max-w-2xl divide-y divide-violet-500/10 border-y border-violet-500/15">
       {LINKS.map((l) => (
-        <section key={l.label} className="rounded-2xl border border-violet-500/20 bg-slate-900/70 transition-colors hover:border-violet-400/50">
-          <a href={l.href} {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})} className="block rounded-2xl p-6">
-            <p className="text-sm text-slate-400">{l.label}</p>
-            <p className="mt-2 break-all font-mono text-sm font-medium">{l.value}</p>
+        <li key={l.label}>
+          <a
+            href={l.href}
+            {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})}
+            className="flex flex-wrap items-baseline justify-between gap-2 py-5 transition-colors hover:text-violet-200"
+          >
+            <span className="text-sm text-slate-400">{l.label}</span>
+            <span className="break-all font-mono text-sm">{l.value} →</span>
           </a>
-        </section>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
